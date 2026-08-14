@@ -1,0 +1,27 @@
+# Same-origin production topology (WEB-01A#11/#35/#36): the browser only ever calls relative
+# /api/v1/... paths against this same nginx origin - it never learns the backend's real address, so
+# backend CORS stays unnecessary (see README#same-origin-topology). `envsubst` (nginx's own
+# docker-entrypoint template mechanism) resolves ${API_UPSTREAM} at container start.
+server {
+    listen 80;
+    server_name _;
+    root /usr/share/nginx/html;
+    index index.html;
+
+    location /api/ {
+        proxy_pass ${API_UPSTREAM};
+        proxy_http_version 1.1;
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # No CORS headers added or stripped here - same-origin means none are needed either way.
+        # Cookie behavior (the HttpOnly refresh cookie) passes through untouched by default.
+    }
+
+    location / {
+        try_files $uri /index.html;
+    }
+}

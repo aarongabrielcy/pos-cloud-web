@@ -1,0 +1,15 @@
+@import "tailwindcss";
+@import "@pos-cloud-web/design-tokens/tokens.css";
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background-color: var(--color-surface-muted);
+  color: var(--color-text);
+}

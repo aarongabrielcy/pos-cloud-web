@@ -1,0 +1,31 @@
+/*
+ * Tailwind v4 theme tokens for the Vendor Admin surface. Kept intentionally small (WEB-01A#25) -
+ * extend only when a real screen needs a token that doesn't exist yet, not speculatively.
+ */
+@theme {
+  --color-brand-50: #f5f3ff;
+  --color-brand-100: #ede9fe;
+  --color-brand-200: #ddd6fe;
+  --color-brand-300: #c4b5fd;
+  --color-brand-400: #a78bfa;
+  --color-brand-500: #8b5cf6;
+  --color-brand-600: #7c3aed;
+  --color-brand-700: #6d28d9;
+  --color-brand-800: #5b21b6;
+  --color-brand-900: #4c1d95;
+
+  --color-surface: #ffffff;
+  --color-surface-muted: #f8fafc;
+  --color-border: #e2e8f0;
+  --color-text: #0f172a;
+  --color-text-muted: #64748b;
+  --color-danger: #dc2626;
+  --color-danger-surface: #fef2f2;
+
+  --font-sans: system-ui, "Segoe UI", Roboto, sans-serif;
+
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+
+  --spacing-sidebar: 16rem;
+}
