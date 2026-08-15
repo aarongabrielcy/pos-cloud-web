@@ -119,6 +119,43 @@ describe("Desktop sidebar collapse", () => {
     await waitFor(() => expect(screen.getByRole("tooltip")).toHaveTextContent("Dashboard"));
   });
 
+  it("shows a tooltip with the Licenses label when collapsed", async () => {
+    mockAuthenticated(["customers.read", "licenses.read"]);
+    renderAt("/app/dashboard");
+
+    await userEvent.click(await screen.findByRole("button", { name: "Collapse sidebar" }));
+    const desktopNav = await findDesktopNav();
+    const licensesLink = within(desktopNav).getByRole("link", { name: "Licenses" });
+
+    licensesLink.focus();
+
+    await waitFor(() => expect(screen.getByRole("tooltip")).toHaveTextContent("Licenses"));
+  });
+
+  it("keeps the Licenses item active on a nested detail path while collapsed", async () => {
+    mockAuthenticated(["customers.read", "licenses.read"]);
+    server.use(
+      http.get("/api/v1/control-plane/licenses/aaaaaaaa-1111-4aaa-8aaa-aaaaaaaaaaaa", () =>
+        HttpResponse.json(
+          {
+            statusCode: 404,
+            code: "LICENSE_NOT_FOUND",
+            message: "License not found",
+            correlationId: "c1",
+          },
+          { status: 404 },
+        ),
+      ),
+    );
+    renderAt("/app/licenses/aaaaaaaa-1111-4aaa-8aaa-aaaaaaaaaaaa");
+
+    await userEvent.click(await screen.findByRole("button", { name: "Collapse sidebar" }));
+    const desktopNav = await findDesktopNav();
+    const licensesLink = within(desktopNav).getByRole("link", { name: "Licenses" });
+
+    await waitFor(() => expect(licensesLink).toHaveAttribute("aria-current", "page"));
+  });
+
   it("keeps the Customers item active on a nested detail path while collapsed", async () => {
     mockAuthenticated(["customers.read"]);
     mockEmptyCustomersList();

@@ -11,6 +11,8 @@ export const PERMISSION_CODES = {
   CUSTOMERS_CREATE: "customers.create",
   CUSTOMERS_STATUS_CHANGE: "customers.status.change",
   LICENSES_READ: "licenses.read",
+  LICENSES_CREATE: "licenses.create",
+  LICENSES_STATUS_CHANGE: "licenses.status.change",
   INSTALLATIONS_READ: "installations.read",
   AUDIT_READ: "audit.read",
 } as const;

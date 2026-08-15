@@ -7,7 +7,10 @@ import { fakeCustomer, fakeCustomerList, mockAuthenticated, renderAt } from "./t
 const CUSTOMERS_URL = "/api/v1/control-plane/customers";
 
 async function openCreateDialog() {
-  await waitFor(() => expect(screen.getByText("GST-MX")).toBeInTheDocument());
+  // Extra headroom under full-workspace parallel test load (many concurrent jsdom environments) -
+  // this resolves near-instantly in isolation, the default 1000ms is just tight under contention
+  // (same rationale as CustomersPage's/CustomerDetailPage's backend-error tests).
+  await waitFor(() => expect(screen.getByText("GST-MX")).toBeInTheDocument(), { timeout: 5000 });
   await userEvent.click(screen.getByRole("button", { name: "New Customer" }));
   return screen.getByRole("dialog");
 }
