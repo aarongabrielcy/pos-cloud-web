@@ -34,6 +34,8 @@ catalog:
   "@types/react-dom": ^19.2.3
   openapi-typescript: ^7.13.0
   turbo: ^2.5.8
+  "@radix-ui/react-dialog": ^1.1.23
+  lucide-react: ^1.31.0
 
 allowBuilds:
   msw: true

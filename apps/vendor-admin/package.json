@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "catalog:",
+    "@radix-ui/react-dialog": "catalog:",
     "@pos-cloud-web/api-client": "workspace:*",
     "@pos-cloud-web/auth": "workspace:*",
     "@pos-cloud-web/config": "workspace:*",
@@ -20,6 +21,7 @@
     "@pos-cloud-web/i18n": "workspace:*",
     "@pos-cloud-web/ui": "workspace:*",
     "@tanstack/react-query": "catalog:",
+    "lucide-react": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-hook-form": "catalog:",
