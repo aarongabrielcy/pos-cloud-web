@@ -79,4 +79,21 @@ describe("Mobile navigation drawer", () => {
     await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
     expect(await screen.findByRole("heading", { name: "Audit" })).toBeInTheDocument();
   });
+
+  it("still shows full labels even when the desktop sidebar is saved as collapsed", async () => {
+    // The mobile drawer's own SidebarNav instance never receives `collapsed` (see AppShell) - a
+    // desktop-only preference must not leak into it (WEB-01C UX improvements #18).
+    localStorage.setItem("pos-cloud-web:sidebar-collapsed", "true");
+    mockAuthenticated();
+    renderAt("/app/dashboard");
+    await screen.findByRole("heading", { name: "Dashboard" });
+
+    await userEvent.click(screen.getByRole("button", { name: "Open navigation menu" }));
+    const drawer = await screen.findByRole("dialog");
+
+    expect(within(drawer).getByText("Dashboard")).toBeInTheDocument();
+    expect(within(drawer).getByText("POS Cloud")).toBeInTheDocument();
+
+    localStorage.clear();
+  });
 });

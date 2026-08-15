@@ -6,7 +6,8 @@ import type { RouteHandle } from "./route-handle";
 import { LoginPage } from "../../features/auth/LoginPage";
 import { NotFoundPage } from "../../features/auth/NotFoundPage";
 import { DashboardPage } from "../../features/dashboard/DashboardPage";
-import { CustomersPage } from "../../features/customers/CustomersPage";
+import { CustomersPage } from "../../features/customers/pages/CustomersPage";
+import { CustomerDetailPage } from "../../features/customers/pages/CustomerDetailPage";
 import { LicensesPage } from "../../features/licenses/LicensesPage";
 import { InstallationsPage } from "../../features/installations/InstallationsPage";
 import { AuditPage } from "../../features/audit/AuditPage";
@@ -38,6 +39,11 @@ export const routes: RouteObject[] = [
                 index: true,
                 element: <CustomersPage />,
                 handle: { crumb: "Customers" } satisfies RouteHandle,
+              },
+              {
+                path: ":id",
+                element: <CustomerDetailPage />,
+                handle: { crumb: "Customer" } satisfies RouteHandle,
               },
             ],
           },
