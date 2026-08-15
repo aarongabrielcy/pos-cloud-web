@@ -24,6 +24,17 @@ function mockAuthenticated(permissions: string[]) {
   );
 }
 
+/** CustomersPage fires a real GET on mount since WEB-01C - this suite only cares about breadcrumb
+ *  text/placement, not list content, so a minimal empty response is enough to avoid MSW's
+ *  onUnhandledRequest: "error" flagging it as a missing handler (packages/testing/src/setup.ts). */
+function mockEmptyCustomersList() {
+  server.use(
+    http.get("/api/v1/control-plane/customers", () =>
+      HttpResponse.json({ items: [], page: 1, pageSize: 25, total: 0, totalPages: 0 }),
+    ),
+  );
+}
+
 function renderAt(initialEntry: string) {
   const router = createMemoryRouter(routes, { initialEntries: [initialEntry] });
   render(
@@ -36,6 +47,7 @@ function renderAt(initialEntry: string) {
 describe("Breadcrumbs", () => {
   it("shows the current page's crumb inside the Topbar breadcrumb nav", async () => {
     mockAuthenticated(["customers.read"]);
+    mockEmptyCustomersList();
     renderAt("/app/customers");
 
     const breadcrumbNav = await screen.findByRole("navigation", { name: "Breadcrumb" });
@@ -52,6 +64,7 @@ describe("Breadcrumbs", () => {
 
   it("renders the breadcrumb nav as a sibling in Topbar, not inside the page content", async () => {
     mockAuthenticated(["customers.read"]);
+    mockEmptyCustomersList();
     renderAt("/app/customers");
 
     const breadcrumbNav = await screen.findByRole("navigation", { name: "Breadcrumb" });

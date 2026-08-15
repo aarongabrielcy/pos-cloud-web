@@ -62,6 +62,7 @@
   --radius-lg: 0.75rem;
 
   --spacing-sidebar: 16rem;
+  --spacing-sidebar-collapsed: 4.5rem;
   --spacing-page-x: 1.5rem;
   --spacing-page-y: 1.5rem;
 }

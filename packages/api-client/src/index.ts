@@ -5,4 +5,4 @@ export {
   type ApiClientConfig,
   type ApiRequestOptions,
 } from "./transport";
-export type { paths, components } from "./generated/schema";
+export type { paths, components, operations } from "./generated/schema";

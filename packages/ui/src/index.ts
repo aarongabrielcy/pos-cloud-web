@@ -15,3 +15,4 @@ export { Pagination, type PaginationProps } from "./Pagination";
 export { DataTable, type DataTableProps, type DataTableColumn } from "./DataTable";
 export { Dialog, type DialogProps } from "./Dialog";
 export { ConfirmDialog, type ConfirmDialogProps } from "./ConfirmDialog";
+export { Tooltip, type TooltipProps } from "./Tooltip";

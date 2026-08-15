@@ -8,6 +8,8 @@
  */
 export const PERMISSION_CODES = {
   CUSTOMERS_READ: "customers.read",
+  CUSTOMERS_CREATE: "customers.create",
+  CUSTOMERS_STATUS_CHANGE: "customers.status.change",
   LICENSES_READ: "licenses.read",
   INSTALLATIONS_READ: "installations.read",
   AUDIT_READ: "audit.read",
