@@ -15,15 +15,19 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@pos-cloud-web/design-tokens": "workspace:*"
+    "@pos-cloud-web/design-tokens": "workspace:*",
+    "@radix-ui/react-dialog": "catalog:",
+    "lucide-react": "catalog:"
   },
   "peerDependencies": {
     "react": "catalog:",
     "react-dom": "catalog:"
   },
   "devDependencies": {
+    "@pos-cloud-web/testing": "workspace:*",
     "@testing-library/jest-dom": "catalog:",
     "@testing-library/react": "catalog:",
+    "@testing-library/user-event": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "eslint": "catalog:",

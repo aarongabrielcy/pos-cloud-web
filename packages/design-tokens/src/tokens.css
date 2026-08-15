@@ -1,6 +1,9 @@
 /*
  * Tailwind v4 theme tokens for the Vendor Admin surface. Kept intentionally small (WEB-01A#25) -
- * extend only when a real screen needs a token that doesn't exist yet, not speculatively.
+ * extend only when a real screen needs a token that doesn't exist yet, not speculatively. WEB-01B
+ * adds a neutral scale (table/card chrome needed more than 2 grays) and semantic status colors
+ * (StatusBadge/Alert live off these - see WEB-01B's design report §C for why status color mapping
+ * itself stays out of packages/ui and lives in the consuming feature module instead).
  */
 @theme {
   --color-brand-50: #f5f3ff;
@@ -14,13 +17,44 @@
   --color-brand-800: #5b21b6;
   --color-brand-900: #4c1d95;
 
+  --color-gray-50: #f8fafc;
+  --color-gray-100: #f1f5f9;
+  --color-gray-200: #e2e8f0;
+  --color-gray-300: #cbd5e1;
+  --color-gray-400: #94a3b8;
+  --color-gray-500: #64748b;
+  --color-gray-600: #475569;
+  --color-gray-700: #334155;
+  --color-gray-800: #1e293b;
+  --color-gray-900: #0f172a;
+
   --color-surface: #ffffff;
   --color-surface-muted: #f8fafc;
   --color-border: #e2e8f0;
   --color-text: #0f172a;
   --color-text-muted: #64748b;
-  --color-danger: #dc2626;
+
+  /* Semantic status triads - each a {surface, text, border} set, one per StatusBadge/Alert variant. */
+  --color-success-surface: #f0fdf4;
+  --color-success-text: #15803d;
+  --color-success-border: #bbf7d0;
+
+  --color-warning-surface: #fffbeb;
+  --color-warning-text: #b45309;
+  --color-warning-border: #fde68a;
+
   --color-danger-surface: #fef2f2;
+  --color-danger-text: #dc2626;
+  --color-danger-border: #fecaca;
+  --color-danger: #dc2626;
+
+  --color-info-surface: #eff6ff;
+  --color-info-text: #1d4ed8;
+  --color-info-border: #bfdbfe;
+
+  --color-neutral-surface: #f8fafc;
+  --color-neutral-text: #475569;
+  --color-neutral-border: #e2e8f0;
 
   --font-sans: system-ui, "Segoe UI", Roboto, sans-serif;
 
@@ -28,4 +62,6 @@
   --radius-lg: 0.75rem;
 
   --spacing-sidebar: 16rem;
+  --spacing-page-x: 1.5rem;
+  --spacing-page-y: 1.5rem;
 }
