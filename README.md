@@ -13,7 +13,9 @@ packages/
   api-client/             Generic fetch transport (ApiError, 204/JSON handling, 401 retry hook) +
                            OpenAPI-generated types (packages/api-client/src/generated/schema.d.ts)
   auth/                   Token store, AuthProvider/useAuth, refresh single-flight, permission helpers
-  ui/                     Button, Input, FormField, Alert, Spinner, Card - accessible primitives
+  ui/                     Button, Input, Select, FormField, Alert, Spinner, Card, PageContainer,
+                           PageHeader, StatusBadge, Skeleton, EmptyState, FilterBar, Pagination,
+                           DataTable, Dialog (Radix-based), ConfirmDialog - accessible primitives
   design-tokens/          Tailwind v4 @theme tokens (packages/design-tokens/src/tokens.css)
   config/                 Zod-validated public (VITE_*) env loading
   i18n/                   Locale contract boundary - single-locale (en) today, no framework yet
@@ -123,6 +125,17 @@ local builds won't have). Standard flow:
   `hasAnyPermission` / `hasAllPermissions`, nav filtering, the `NotAuthorized` page) are UX
   conveniences only.
 
+## UI foundation & navigation (WEB-01B)
+
+App-shell/navigation/list-screen conventions - responsive shell, permission-aware sidebar with a
+mobile drawer, route-driven breadcrumbs, table/filter/pagination/dialog patterns for WEB-01C+ to
+assemble against - are documented in
+[`apps/vendor-admin/docs/conventions.md`](apps/vendor-admin/docs/conventions.md). Key structural
+rule: breadcrumbs render **only** inside `Topbar`, never inside `PageContainer`/`PageHeader`.
+
+Allowed new runtime dependencies for this: `@radix-ui/react-dialog` (accessible Dialog/mobile
+drawer primitives) and `lucide-react` (icons).
+
 ## Docker
 
 ```
@@ -132,6 +145,14 @@ apps/vendor-admin/nginx/default.conf.template
 
 SPA fallback (`try_files $uri /index.html`) + `/api/` reverse proxy to `${API_UPSTREAM}`. No CORS
 headers are added or stripped - same-origin means none are needed either way.
+
+**Permanent compose integration** (WEB-01B): this app is now a real service
+(`pos-cloud-web`, port `8080:80`) in the shared `infra/docker-compose.yml` alongside
+`pos-cloud-api`/`postgres`/`redis` - not just a standalone image built ad hoc for validation.
+`config/pos-cloud/web.env` supplies `API_UPSTREAM=http://pos-cloud-api:5100` (the real Docker DNS
+service name on `pos-cloud-network` - never `localhost:5100`/`host.docker.internal` in this
+permanent topology, unlike the throwaway `host.docker.internal` container used for pre-permanent
+runtime validation).
 
 ## Backend dependency & backlog policy
 

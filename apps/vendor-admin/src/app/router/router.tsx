@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate, type RouteObject } from "react-router-do
 import { AppShell } from "../layouts/AppShell";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { RequirePermission } from "./RequirePermission";
+import type { RouteHandle } from "./route-handle";
 import { LoginPage } from "../../features/auth/LoginPage";
 import { NotFoundPage } from "../../features/auth/NotFoundPage";
 import { DashboardPage } from "../../features/dashboard/DashboardPage";
@@ -24,26 +25,54 @@ export const routes: RouteObject[] = [
         element: <AppShell />,
         children: [
           { index: true, element: <Navigate to="/app/dashboard" replace /> },
-          { path: "dashboard", element: <DashboardPage /> },
+          {
+            path: "dashboard",
+            element: <DashboardPage />,
+            handle: { crumb: "Dashboard" } satisfies RouteHandle,
+          },
           {
             path: "customers",
             element: <RequirePermission code={PERMISSION_CODES.CUSTOMERS_READ} />,
-            children: [{ index: true, element: <CustomersPage /> }],
+            children: [
+              {
+                index: true,
+                element: <CustomersPage />,
+                handle: { crumb: "Customers" } satisfies RouteHandle,
+              },
+            ],
           },
           {
             path: "licenses",
             element: <RequirePermission code={PERMISSION_CODES.LICENSES_READ} />,
-            children: [{ index: true, element: <LicensesPage /> }],
+            children: [
+              {
+                index: true,
+                element: <LicensesPage />,
+                handle: { crumb: "Licenses" } satisfies RouteHandle,
+              },
+            ],
           },
           {
             path: "installations",
             element: <RequirePermission code={PERMISSION_CODES.INSTALLATIONS_READ} />,
-            children: [{ index: true, element: <InstallationsPage /> }],
+            children: [
+              {
+                index: true,
+                element: <InstallationsPage />,
+                handle: { crumb: "Installations" } satisfies RouteHandle,
+              },
+            ],
           },
           {
             path: "audit",
             element: <RequirePermission code={PERMISSION_CODES.AUDIT_READ} />,
-            children: [{ index: true, element: <AuditPage /> }],
+            children: [
+              {
+                index: true,
+                element: <AuditPage />,
+                handle: { crumb: "Audit" } satisfies RouteHandle,
+              },
+            ],
           },
         ],
       },
