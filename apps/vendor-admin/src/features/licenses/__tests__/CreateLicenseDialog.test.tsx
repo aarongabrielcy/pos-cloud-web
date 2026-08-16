@@ -13,6 +13,7 @@ import {
 const LICENSES_URL = "/api/v1/control-plane/licenses";
 const CUSTOMERS_URL = "/api/v1/control-plane/customers";
 const CUSTOMER_ID = "11111111-1111-4111-8111-111111111111";
+const CUSTOMER_LABEL = "GST-MX — GS Trackme S.A. de C.V.";
 
 async function openCreateDialog() {
   // Extra headroom under full-workspace parallel test load (many concurrent jsdom environments) -
@@ -24,13 +25,25 @@ async function openCreateDialog() {
   return screen.getByRole("dialog");
 }
 
+/** CustomerPicker (WEB-01E) requires 3+ chars before it searches at all - types a search term long
+ *  enough to trigger the request, waits for the option, then selects it via the combobox. */
+async function pickCustomer(dialog: HTMLElement, user: ReturnType<typeof userEvent.setup>) {
+  await user.type(within(dialog).getByLabelText("Customer"), "trackme");
+  // The Combobox's listbox renders through a Radix Popover Portal - a sibling of the Dialog's own
+  // portal content in the DOM, not a descendant of `dialog` - so it must be queried via `screen`.
+  // Extra headroom under full-workspace parallel test load - same rationale as openCreateDialog.
+  const option = await screen.findByRole("option", { name: CUSTOMER_LABEL }, { timeout: 5000 });
+  await user.click(option);
+}
+
 async function fillValidBasicLicense(dialog: HTMLElement) {
-  await userEvent.selectOptions(within(dialog).getByLabelText("Customer"), CUSTOMER_ID);
-  await userEvent.type(within(dialog).getByLabelText("License number"), "LIC-NEW-00099");
+  const user = userEvent.setup();
+  await pickCustomer(dialog, user);
+  await user.type(within(dialog).getByLabelText("License number"), "LIC-NEW-00099");
   fireEvent.change(within(dialog).getByLabelText("Valid from"), {
     target: { value: "2026-01-01" },
   });
-  await userEvent.type(within(dialog).getByLabelText("Max installations"), "5");
+  await user.type(within(dialog).getByLabelText("Max installations"), "5");
 }
 
 describe("CreateLicenseDialog", () => {
@@ -68,14 +81,16 @@ describe("CreateLicenseDialog", () => {
     renderAt("/app/licenses");
 
     const dialog = await openCreateDialog();
-    await waitFor(() => expect(lastStatus).toBe("ACTIVE"));
 
     const user = userEvent.setup();
-    await user.type(within(dialog).getByLabelText("Search customer"), "trackme");
+    await user.type(within(dialog).getByLabelText("Customer"), "trackme");
 
-    await waitFor(() => expect(lastSearch).toBe("trackme"), { timeout: 2000 });
+    await waitFor(() => expect(lastSearch).toBe("trackme"), { timeout: 5000 });
+    expect(lastStatus).toBe("ACTIVE");
 
-    const option = within(dialog).getByRole("option", { name: "GST-MX — GS Trackme S.A. de C.V." });
+    // The listbox renders through a Radix Popover Portal, a sibling of the Dialog's own portal
+    // content - not a descendant of `dialog` - so it must be queried via `screen`.
+    const option = await screen.findByRole("option", { name: CUSTOMER_LABEL }, { timeout: 5000 });
     expect(option).toBeInTheDocument();
   });
 

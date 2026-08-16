@@ -5,6 +5,7 @@ import { Alert, Button, Card, PageContainer, PageHeader, StatusBadge } from "@po
 import { PERMISSION_CODES, useAuth } from "@pos-cloud-web/auth";
 import { useDynamicCrumb } from "../../../app/layouts/use-breadcrumb";
 import { apiErrorMessage } from "../../../shared/api/api-error-display";
+import { customerDisplayLabel } from "../../../shared/display/customer-display";
 import { BackLink } from "../../../shared/components/BackLink";
 import { useLicense } from "../hooks/use-license";
 import { LicenseStatusBadge } from "../components/LicenseStatusBadge";
@@ -120,9 +121,9 @@ export function LicenseDetailPage() {
             <dd className="text-sm text-[var(--color-text)]">
               <Link
                 to={`/app/customers/${license.customerId}`}
-                className="font-mono text-xs text-brand-700 hover:underline"
+                className="text-brand-700 hover:underline"
               >
-                {license.customerId}
+                {customerDisplayLabel(license.customer)}
               </Link>
             </dd>
           </div>

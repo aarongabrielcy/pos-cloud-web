@@ -27,6 +27,42 @@ describe("LicenseDetailPage - detail", () => {
     expect(screen.getByText("ACTIVE")).toBeInTheDocument();
   });
 
+  it("renders the Customer field as a human identity Link, never the raw customerId (WEB-01E §4/§35)", async () => {
+    mockAuthenticated(["licenses.read"]);
+    server.use(http.get(DETAIL_URL, () => HttpResponse.json(fakeLicense())));
+
+    renderAt(DETAIL_PATH);
+
+    await waitFor(
+      () => expect(screen.getByRole("heading", { name: "LIC-GST-00001" })).toBeInTheDocument(),
+      { timeout: 5000 },
+    );
+
+    const customerLink = screen.getByRole("link", { name: "GST-MX — GS Trackme S.A. de C.V." });
+    expect(customerLink).toHaveAttribute(
+      "href",
+      "/app/customers/11111111-1111-4111-8111-111111111111",
+    );
+    expect(screen.queryByText("11111111-1111-4111-8111-111111111111")).not.toBeInTheDocument();
+  });
+
+  it("falls back to 'Unavailable' - never the raw id - if the customer summary is unexpectedly missing (WEB-01E §37)", async () => {
+    mockAuthenticated(["licenses.read"]);
+    server.use(
+      http.get(DETAIL_URL, () => HttpResponse.json({ ...fakeLicense(), customer: undefined })),
+    );
+
+    renderAt(DETAIL_PATH);
+
+    await waitFor(
+      () => expect(screen.getByRole("heading", { name: "LIC-GST-00001" })).toBeInTheDocument(),
+      { timeout: 5000 },
+    );
+
+    expect(screen.getByText("Unavailable")).toBeInTheDocument();
+    expect(screen.queryByText("11111111-1111-4111-8111-111111111111")).not.toBeInTheDocument();
+  });
+
   it("renders a real 'Back to Licenses' link targeting exactly /app/licenses", async () => {
     mockAuthenticated(["licenses.read"]);
     server.use(http.get(DETAIL_URL, () => HttpResponse.json(fakeLicense())));

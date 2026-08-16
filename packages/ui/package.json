@@ -17,6 +17,7 @@
   "dependencies": {
     "@pos-cloud-web/design-tokens": "workspace:*",
     "@radix-ui/react-dialog": "catalog:",
+    "@radix-ui/react-popover": "catalog:",
     "@radix-ui/react-tooltip": "catalog:",
     "lucide-react": "catalog:"
   },

@@ -43,7 +43,7 @@ describe("LicensesPage - list", () => {
     expect(within(row as HTMLElement).getByText("Basic")).toBeInTheDocument();
 
     const customerLink = screen.getByRole("link", {
-      name: "11111111-1111-4111-8111-111111111111",
+      name: "GST-MX — GS Trackme S.A. de C.V.",
     });
     expect(customerLink).toHaveAttribute(
       "href",
@@ -180,6 +180,29 @@ describe("LicensesPage - list", () => {
 
     await waitFor(() => expect(lastSearch).toBe("gst"), { timeout: 2000 });
     expect(router.state.location.search).toContain("search=gst");
+  });
+
+  it("never applies a 1-2 character search to the backend/URL, and shows a helper instead of an error", async () => {
+    let lastSearch: string | null = null;
+    mockAuthenticated();
+    server.use(
+      http.get(LICENSES_URL, ({ request }) => {
+        lastSearch = new URL(request.url).searchParams.get("search");
+        return HttpResponse.json(fakeLicenseList());
+      }),
+    );
+
+    const { router } = renderAt("/app/licenses");
+    await waitFor(() => expect(screen.getByText("LIC-GST-00001")).toBeInTheDocument());
+
+    const user = userEvent.setup();
+    await user.type(screen.getByLabelText("Search licenses"), "gs");
+
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    expect(lastSearch).toBeNull();
+    expect(router.state.location.search).not.toContain("search=");
+    expect(screen.getByText("Type at least 3 characters to search")).toBeInTheDocument();
   });
 
   it("applies a deep-linked ?customerId= filter without requiring manual UUID entry", async () => {
