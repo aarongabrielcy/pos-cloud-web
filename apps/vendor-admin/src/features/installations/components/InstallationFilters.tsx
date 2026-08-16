@@ -1,26 +1,38 @@
 import { FilterBar, Input, Select } from "@pos-cloud-web/ui";
 import { MIN_SEARCH_LENGTH } from "../../../shared/search-constants";
 
-export interface CustomerFiltersProps {
+export interface InstallationFiltersProps {
   status: string;
+  platform: string;
   searchInput: string;
   onStatusChange: (status: string) => void;
+  onPlatformChange: (platform: string) => void;
   onSearchInputChange: (value: string) => void;
 }
 
 const STATUS_OPTIONS = [
   { value: "", label: "All statuses" },
+  { value: "PENDING", label: "Pending" },
   { value: "ACTIVE", label: "Active" },
   { value: "SUSPENDED", label: "Suspended" },
-  { value: "INACTIVE", label: "Inactive" },
+  { value: "DECOMMISSIONED", label: "Decommissioned" },
 ] as const;
 
-export function CustomerFilters({
+const PLATFORM_OPTIONS = [
+  { value: "", label: "All platforms" },
+  { value: "WINDOWS", label: "Windows" },
+  { value: "ANDROID", label: "Android" },
+  { value: "IOS", label: "iOS" },
+] as const;
+
+export function InstallationFilters({
   status,
+  platform,
   searchInput,
   onStatusChange,
+  onPlatformChange,
   onSearchInputChange,
-}: CustomerFiltersProps) {
+}: InstallationFiltersProps) {
   const showHelper = searchInput.length > 0 && searchInput.length < MIN_SEARCH_LENGTH;
 
   return (
@@ -37,9 +49,21 @@ export function CustomerFilters({
           </option>
         ))}
       </Select>
+      <Select
+        aria-label="Filter by platform"
+        className="lg:w-44"
+        value={platform}
+        onChange={(event) => onPlatformChange(event.target.value)}
+      >
+        {PLATFORM_OPTIONS.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </Select>
       <div className="flex flex-col gap-1 lg:flex-1">
         <Input
-          aria-label="Search customers"
+          aria-label="Search installations"
           placeholder="Search by code or name"
           value={searchInput}
           onChange={(event) => onSearchInputChange(event.target.value)}

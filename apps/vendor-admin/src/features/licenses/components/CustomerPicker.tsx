@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { FormField, Input, Select } from "@pos-cloud-web/ui";
+import { Combobox, type ComboboxOption } from "@pos-cloud-web/ui";
 import { useCustomers } from "../../customers/hooks/use-customers";
 import type { Customer } from "../../customers/api/customers-api";
 import { useDebouncedValue } from "../../../shared/hooks/useDebouncedValue";
 import { apiErrorMessage } from "../../../shared/api/api-error-display";
+import { customerDisplayLabel } from "../../../shared/display/customer-display";
+import { MIN_SEARCH_LENGTH, SEARCH_DEBOUNCE_MS } from "../../../shared/search-constants";
 
 export interface CustomerPickerProps {
   value: string;
@@ -14,67 +16,74 @@ export interface CustomerPickerProps {
 const PAGE_SIZE = 20;
 
 /**
- * Reuses the real Customers feature's own list API/hook (never a second GET /customers
- * implementation - WEB-01D design brief §14) via a debounced search box driving a native <select>.
- * Bounded pageSize keeps this a real, scalable server-search picker rather than an N+1 per-row fetch
- * or a "load everything" dump. Only ACTIVE customers are offered: the backend rejects license
- * creation for a non-ACTIVE customer with 409 CUSTOMER_NOT_ELIGIBLE_FOR_LICENSE, so surfacing only
- * eligible customers here is applying a confirmed backend rule, not inventing new behavior.
+ * A real remote-searchable combobox (WEB-01E UX correction brief §11/§12) - replaces the previous
+ * "search input + separate native select" pattern, which took two distinct interactions to pick a
+ * customer even though the backend search itself always worked correctly. Reuses the real Customers
+ * feature's own list API/hook (never a second GET /customers implementation). Only ACTIVE customers
+ * are offered - the backend rejects license/installation creation for a non-ACTIVE customer, so this
+ * reflects a confirmed backend rule, not invented behavior.
  *
- * A native <select> keeps this fully keyboard-accessible without a bespoke combobox widget (no UI
- * framework exists for that yet, and building one is out of scope here). The currently selected
- * customer is always kept in the options list even if a later search narrows it out of the visible
- * results, so the select's value never goes stale/invalid mid-selection.
+ * There is exactly ONE CustomerPicker implementation, reused as-is by both CreateLicenseDialog and
+ * CreateInstallationDialog (§13) - the search/minimum-length/debounce logic lives here once.
+ *
+ * `selectedCustomer` (this component's own local state, not derivable from `value` alone - `value`
+ * is just the plain customerId the parent form tracks) is what lets the combobox render a real human
+ * label for the current selection. Radix Dialog unmounts its children on close (established
+ * WEB-01C/WEB-01D precedent), so this local state - and `value` upstream via the parent's own
+ * `reset()` - both naturally start fresh every time a Create dialog reopens; there is currently no
+ * flow in this app that hands CustomerPicker a pre-filled `value` without having just set it itself.
  */
-export function CustomerPicker({ value, onChange, error }: CustomerPickerProps) {
+// `value` (the plain customerId) intentionally isn't read here - see the class doc comment above for
+// why this component's own `selectedCustomer` state is the real source of the rendered label.
+export function CustomerPicker({ onChange, error }: CustomerPickerProps) {
   const [searchInput, setSearchInput] = useState("");
-  const [selected, setSelected] = useState<Customer | null>(null);
-  const debouncedSearch = useDebouncedValue(searchInput, 300);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const debouncedSearch = useDebouncedValue(searchInput, SEARCH_DEBOUNCE_MS);
+  const searchReady = debouncedSearch.length >= MIN_SEARCH_LENGTH;
 
-  const query = useCustomers({
-    page: 1,
-    pageSize: PAGE_SIZE,
-    status: "ACTIVE",
-    search: debouncedSearch || undefined,
-  });
+  const query = useCustomers(
+    { page: 1, pageSize: PAGE_SIZE, status: "ACTIVE", search: debouncedSearch },
+    { enabled: searchReady },
+  );
 
   const results = query.data?.items ?? [];
-  const options =
-    selected && !results.some((customer) => customer.id === selected.id)
-      ? [selected, ...results]
-      : results;
+  const options: ComboboxOption[] = results.map((customer) => ({
+    id: customer.id,
+    label: customerDisplayLabel(customer),
+  }));
 
-  function handleSelectChange(nextId: string) {
-    const customer = options.find((option) => option.id === nextId) ?? null;
-    setSelected(customer);
-    onChange(nextId);
+  function handleSelect(option: ComboboxOption | null) {
+    if (!option) {
+      setSelectedCustomer(null);
+      setSearchInput("");
+      onChange("");
+      return;
+    }
+    const customer = results.find((candidate) => candidate.id === option.id) ?? null;
+    setSelectedCustomer(customer);
+    onChange(option.id);
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <FormField
-        label="Search customer"
-        hint="Only active customers are eligible for a new license."
-      >
-        <Input
-          placeholder="Search by code or name"
-          value={searchInput}
-          onChange={(event) => setSearchInput(event.target.value)}
-        />
-      </FormField>
-      <FormField label="Customer" error={error}>
-        <Select value={value} onChange={(event) => handleSelectChange(event.target.value)}>
-          <option value="">{query.isLoading ? "Loading customers…" : "Choose a customer"}</option>
-          {options.map((customer) => (
-            <option key={customer.id} value={customer.id}>
-              {customer.code} — {customer.legalName}
-            </option>
-          ))}
-        </Select>
-      </FormField>
-      {query.isError ? (
-        <p className="text-xs text-[var(--color-danger)]">{apiErrorMessage(query.error)}</p>
-      ) : null}
-    </div>
+    <Combobox
+      label="Customer"
+      placeholder="Search customer by code or name…"
+      searchValue={searchInput}
+      onSearchValueChange={setSearchInput}
+      options={options}
+      selected={
+        // Deliberately never falls back to rendering the raw `value` (a UUID) as a label - §4/§37
+        // forbid a raw id as the visible label under any circumstance, including this one.
+        selectedCustomer
+          ? { id: selectedCustomer.id, label: customerDisplayLabel(selectedCustomer) }
+          : null
+      }
+      onSelect={handleSelect}
+      isLoading={searchReady && query.isLoading}
+      error={error}
+      queryError={query.isError ? apiErrorMessage(query.error) : undefined}
+      helperText={!searchReady ? `Type at least ${MIN_SEARCH_LENGTH} characters` : undefined}
+      emptyMessage="No matching customers"
+    />
   );
 }

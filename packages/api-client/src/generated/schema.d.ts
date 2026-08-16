@@ -551,6 +551,12 @@ export interface components {
             maxInstallations: number;
             entitlements?: components["schemas"]["EntitlementRequestDto"][];
         };
+        CustomerSummaryResponseDto: {
+            id: string;
+            code: string;
+            legalName: string;
+            tradeName?: string | null;
+        };
         EntitlementResponseDto: {
             id: string;
             code: string;
@@ -562,6 +568,7 @@ export interface components {
         LicenseResponseDto: {
             id: string;
             customerId: string;
+            customer: components["schemas"]["CustomerSummaryResponseDto"];
             licenseNumber: string;
             /** @enum {string} */
             edition: "BASIC" | "PREMIUM";
@@ -601,7 +608,7 @@ export interface components {
             /** Format: uuid */
             licenseId: string;
             /**
-             * @description 3-80 chars, normalized to ^[A-Z0-9][A-Z0-9_-]{4,79}$
+             * @description 5-80 chars, normalized to ^[A-Z0-9][A-Z0-9_-]{4,79}$
              * @example POS-GST-00001
              */
             installationCode: string;
@@ -610,10 +617,18 @@ export interface components {
             /** @enum {string} */
             platform: "WINDOWS" | "ANDROID" | "IOS";
         };
+        LicenseSummaryResponseDto: {
+            id: string;
+            licenseNumber: string;
+            edition: string;
+            status: string;
+        };
         InstallationResponseDto: {
             id: string;
             customerId: string;
+            customer: components["schemas"]["CustomerSummaryResponseDto"];
             licenseId: string;
+            license: components["schemas"]["LicenseSummaryResponseDto"];
             installationCode: string;
             name: string;
             /** @enum {string} */
@@ -638,7 +653,9 @@ export interface components {
         InstallationListItemResponseDto: {
             id: string;
             customerId: string;
+            customer: components["schemas"]["CustomerSummaryResponseDto"];
             licenseId: string;
+            license: components["schemas"]["LicenseSummaryResponseDto"];
             installationCode: string;
             name: string;
             /** @enum {string} */

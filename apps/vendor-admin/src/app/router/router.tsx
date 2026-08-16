@@ -10,7 +10,8 @@ import { CustomersPage } from "../../features/customers/pages/CustomersPage";
 import { CustomerDetailPage } from "../../features/customers/pages/CustomerDetailPage";
 import { LicensesPage } from "../../features/licenses/pages/LicensesPage";
 import { LicenseDetailPage } from "../../features/licenses/pages/LicenseDetailPage";
-import { InstallationsPage } from "../../features/installations/InstallationsPage";
+import { InstallationsPage } from "../../features/installations/pages/InstallationsPage";
+import { InstallationDetailPage } from "../../features/installations/pages/InstallationDetailPage";
 import { AuditPage } from "../../features/audit/AuditPage";
 import { PERMISSION_CODES } from "@pos-cloud-web/auth";
 
@@ -72,6 +73,11 @@ export const routes: RouteObject[] = [
                 index: true,
                 element: <InstallationsPage />,
                 handle: { crumb: "Installations" } satisfies RouteHandle,
+              },
+              {
+                path: ":id",
+                element: <InstallationDetailPage />,
+                handle: { crumb: "Installation" } satisfies RouteHandle,
               },
             ],
           },

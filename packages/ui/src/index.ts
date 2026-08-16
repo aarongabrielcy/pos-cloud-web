@@ -16,3 +16,4 @@ export { DataTable, type DataTableProps, type DataTableColumn } from "./DataTabl
 export { Dialog, type DialogProps } from "./Dialog";
 export { ConfirmDialog, type ConfirmDialogProps } from "./ConfirmDialog";
 export { Tooltip, type TooltipProps } from "./Tooltip";
+export { Combobox, type ComboboxProps, type ComboboxOption } from "./Combobox";

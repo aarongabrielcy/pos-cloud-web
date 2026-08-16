@@ -155,6 +155,30 @@ describe("CustomersPage - list", () => {
     expect(router.state.location.search).toContain("search=trackme");
   });
 
+  it("never applies a 1-2 character search to the backend/URL, and shows a helper instead of an error", async () => {
+    let lastSearch: string | null = null;
+    mockAuthenticated();
+    server.use(
+      http.get(CUSTOMERS_URL, ({ request }) => {
+        lastSearch = new URL(request.url).searchParams.get("search");
+        return HttpResponse.json(fakeCustomerList());
+      }),
+    );
+
+    const { router } = renderAt("/app/customers");
+    await waitFor(() => expect(screen.getByText("GST-MX")).toBeInTheDocument());
+
+    const user = userEvent.setup();
+    await user.type(screen.getByLabelText("Search customers"), "gs");
+
+    // Give the 300ms debounce a real chance to fire before asserting nothing was applied.
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    expect(lastSearch).toBeNull();
+    expect(router.state.location.search).not.toContain("search=");
+    expect(screen.getByText("Type at least 3 characters to search")).toBeInTheDocument();
+  });
+
   it("shows the New Customer action when the admin has customers.create", async () => {
     mockAuthenticated(["customers.read", "customers.create"]);
     server.use(http.get(CUSTOMERS_URL, () => HttpResponse.json(fakeCustomerList())));

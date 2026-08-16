@@ -30,6 +30,12 @@ export function fakeLicense(overrides: Partial<License> = {}): License {
   return {
     id: "aaaaaaaa-1111-4aaa-8aaa-aaaaaaaaaaaa",
     customerId: "11111111-1111-4111-8111-111111111111",
+    customer: {
+      id: "11111111-1111-4111-8111-111111111111",
+      code: "GST-MX",
+      legalName: "GS Trackme S.A. de C.V.",
+      tradeName: "GS Trackme",
+    },
     licenseNumber: "LIC-GST-00001",
     edition: "BASIC",
     licenseModel: "PERPETUAL",

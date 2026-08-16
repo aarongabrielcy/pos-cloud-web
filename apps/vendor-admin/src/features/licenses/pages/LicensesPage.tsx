@@ -14,6 +14,8 @@ import { PERMISSION_CODES, useAuth } from "@pos-cloud-web/auth";
 import { useDebouncedValue } from "../../../shared/hooks/useDebouncedValue";
 import { useListQueryParams } from "../../../shared/hooks/useListQueryParams";
 import { apiErrorMessage } from "../../../shared/api/api-error-display";
+import { MIN_SEARCH_LENGTH, SEARCH_DEBOUNCE_MS } from "../../../shared/search-constants";
+import { customerDisplayLabel } from "../../../shared/display/customer-display";
 import { LicenseFilters } from "../components/LicenseFilters";
 import { LicenseStatusBadge } from "../components/LicenseStatusBadge";
 import { CreateLicenseDialog } from "../components/CreateLicenseDialog";
@@ -44,15 +46,12 @@ const COLUMNS: DataTableColumn<License>[] = [
   {
     key: "customerId",
     header: "Customer",
-    // The list response only includes customerId, never a denormalized customer name/code (see
-    // final report §M) - linking straight to the customer's own detail page lets an admin resolve
-    // identity in one click without an N+1 fetch per row.
+    // The list response now includes a batched, N+1-safe customer summary alongside customerId
+    // (pos-cloud relation-summary hardening) - render the human identity, never the raw UUID
+    // (WEB-01E brief §4), while still linking to the customer's own detail page by id.
     render: (license) => (
-      <Link
-        to={`/app/customers/${license.customerId}`}
-        className="font-mono text-xs text-brand-700 hover:underline"
-      >
-        {license.customerId}
+      <Link to={`/app/customers/${license.customerId}`} className="text-brand-700 hover:underline">
+        {customerDisplayLabel(license.customer)}
       </Link>
     ),
   },
@@ -85,14 +84,16 @@ export function LicensesPage() {
     filterKeys: FILTER_KEYS,
   });
   const [searchInput, setSearchInput] = useState(filters.search ?? "");
-  const debouncedSearch = useDebouncedValue(searchInput, 300);
+  const debouncedSearch = useDebouncedValue(searchInput, SEARCH_DEBOUNCE_MS);
+  // Below the minimum, treat the debounced value as empty - same rule CustomersPage established.
+  const effectiveSearch = debouncedSearch.length >= MIN_SEARCH_LENGTH ? debouncedSearch : "";
 
   useEffect(() => {
     // Guard against firing on mount (and after the URL catches up to a prior debounce) - same
     // pattern CustomersPage established, avoids silently bouncing a deep link like `?page=3` to 1.
-    if (debouncedSearch === (filters.search ?? "")) return;
-    setFilter("search", debouncedSearch);
-  }, [debouncedSearch, filters.search, setFilter]);
+    if (effectiveSearch === (filters.search ?? "")) return;
+    setFilter("search", effectiveSearch);
+  }, [effectiveSearch, filters.search, setFilter]);
 
   const statusFilter =
     filters.status && isLicenseStatus(filters.status) ? filters.status : undefined;

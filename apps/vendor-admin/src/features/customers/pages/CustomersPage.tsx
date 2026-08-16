@@ -14,6 +14,7 @@ import { PERMISSION_CODES, useAuth } from "@pos-cloud-web/auth";
 import { useDebouncedValue } from "../../../shared/hooks/useDebouncedValue";
 import { useListQueryParams } from "../../../shared/hooks/useListQueryParams";
 import { apiErrorMessage } from "../../../shared/api/api-error-display";
+import { MIN_SEARCH_LENGTH, SEARCH_DEBOUNCE_MS } from "../../../shared/search-constants";
 import { CustomerFilters } from "../components/CustomerFilters";
 import { CustomerStatusBadge } from "../components/CustomerStatusBadge";
 import { CreateCustomerDialog } from "../components/CreateCustomerDialog";
@@ -60,15 +61,18 @@ export function CustomersPage() {
     filterKeys: FILTER_KEYS,
   });
   const [searchInput, setSearchInput] = useState(filters.search ?? "");
-  const debouncedSearch = useDebouncedValue(searchInput, 300);
+  const debouncedSearch = useDebouncedValue(searchInput, SEARCH_DEBOUNCE_MS);
+  // Below the minimum, treat the debounced value as empty - a 1-2 char search is never applied to
+  // the URL/backend (WEB-01E brief §22/§23), it just shows CustomerFilters' helper text instead.
+  const effectiveSearch = debouncedSearch.length >= MIN_SEARCH_LENGTH ? debouncedSearch : "";
 
   useEffect(() => {
     // Guard against firing on mount (and after the URL catches up to a prior debounce) - without
     // this, an unconditional setFilter call would delete `page` on every mount (setFilter's
     // contract always resets page to 1), silently bouncing a deep link like `?page=3` back to 1.
-    if (debouncedSearch === (filters.search ?? "")) return;
-    setFilter("search", debouncedSearch);
-  }, [debouncedSearch, filters.search, setFilter]);
+    if (effectiveSearch === (filters.search ?? "")) return;
+    setFilter("search", effectiveSearch);
+  }, [effectiveSearch, filters.search, setFilter]);
 
   const statusFilter =
     filters.status && isCustomerStatus(filters.status) ? filters.status : undefined;

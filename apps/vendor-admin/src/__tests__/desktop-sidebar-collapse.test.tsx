@@ -156,6 +156,43 @@ describe("Desktop sidebar collapse", () => {
     await waitFor(() => expect(licensesLink).toHaveAttribute("aria-current", "page"));
   });
 
+  it("shows a tooltip with the Installations label when collapsed", async () => {
+    mockAuthenticated(["customers.read", "installations.read"]);
+    renderAt("/app/dashboard");
+
+    await userEvent.click(await screen.findByRole("button", { name: "Collapse sidebar" }));
+    const desktopNav = await findDesktopNav();
+    const installationsLink = within(desktopNav).getByRole("link", { name: "Installations" });
+
+    installationsLink.focus();
+
+    await waitFor(() => expect(screen.getByRole("tooltip")).toHaveTextContent("Installations"));
+  });
+
+  it("keeps the Installations item active on a nested detail path while collapsed", async () => {
+    mockAuthenticated(["customers.read", "installations.read"]);
+    server.use(
+      http.get("/api/v1/control-plane/installations/bbbbbbbb-2222-4bbb-8bbb-bbbbbbbbbbbb", () =>
+        HttpResponse.json(
+          {
+            statusCode: 404,
+            code: "INSTALLATION_NOT_FOUND",
+            message: "Installation not found",
+            correlationId: "c1",
+          },
+          { status: 404 },
+        ),
+      ),
+    );
+    renderAt("/app/installations/bbbbbbbb-2222-4bbb-8bbb-bbbbbbbbbbbb");
+
+    await userEvent.click(await screen.findByRole("button", { name: "Collapse sidebar" }));
+    const desktopNav = await findDesktopNav();
+    const installationsLink = within(desktopNav).getByRole("link", { name: "Installations" });
+
+    await waitFor(() => expect(installationsLink).toHaveAttribute("aria-current", "page"));
+  });
+
   it("keeps the Customers item active on a nested detail path while collapsed", async () => {
     mockAuthenticated(["customers.read"]);
     mockEmptyCustomersList();
